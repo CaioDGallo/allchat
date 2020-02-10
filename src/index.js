@@ -1,14 +1,16 @@
 const express = require('express');
 const WebSocket = require('ws');
 
-const INDEX = '../index.html';
+const INDEX = '/index.html';
+const PORT = process.env.PORT || 3000;
+
 const app = express();
 
 app.use(express.json());
 
 app.use((req, res) => res.sendFile(INDEX, { root: __dirname }))
 
-var server = app.listen(5000, () => console.log(`Listening on 5000`));
+var server = app.listen(PORT, () => console.log(`Listening on ${PORT}`));
 
 const wss = new WebSocket.Server({ server });
 
