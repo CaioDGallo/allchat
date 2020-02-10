@@ -5,9 +5,9 @@ const app = express();
 
 app.use(express.json());
 
-app.get('/', () => {})
+app.use((req, res) => res.sendFile(INDEX, { root: __dirname }))
 
-var server = app.listen(5000);
+var server = app.listen(5000, () => console.log(`Listening on 5000`));
 
 const wss = new WebSocket.Server({ server });
 
@@ -29,4 +29,6 @@ wss.on('connection', (ws) => {
 
     //send immediatly a feedback to the incoming connection    
     ws.send('Hi there, I am a WebSocket server');
+
+    ws.on('close', () => console.log('Client disconnected'));
 });
