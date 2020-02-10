@@ -1,6 +1,7 @@
 const express = require('express');
 const WebSocket = require('ws');
 
+const INDEX = '../index.html';
 const app = express();
 
 app.use(express.json());
