@@ -5,6 +5,8 @@ const app = express();
 
 app.use(express.json());
 
+app.get('/', () => {})
+
 var server = app.listen(5000);
 
 const wss = new WebSocket.Server({ server });
