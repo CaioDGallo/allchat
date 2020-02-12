@@ -14,24 +14,38 @@ var server = app.listen(PORT, () => console.log(`Listening on ${PORT}`));
 
 const wss = new WebSocket.Server({ server });
 
+function getUniqueID() {
+    function s4() {
+        return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
+    }
+    return s4() + s4() + '-' + s4();
+};
+
 wss.on('connection', (ws) => {
 
-    //connection is up, let's add a simple simple event
     ws.on('message', (message) => {
 
-        //log the received message and send it back to the client
-        console.log('received: %s', message);
+        var receivedMessage = JSON.parse(message)
+
+        var messageObject = {
+            'message': receivedMessage.message,
+            'id': getUniqueID(),
+            'user': 'Usuário teste',
+        }
         
         wss.clients
         .forEach(client => {
             if (client != ws) {
-                client.send(`Hello, broadcast message -> ${message}`);
+                client.send(JSON.stringify(messageObject));
             }    
         });
     });
 
-    //send immediatly a feedback to the incoming connection    
-    ws.send('Hi there, I am a WebSocket server');
+    ws.send(JSON.stringify({
+        'message': 'User connected to server',
+        'id': getUniqueID(),
+        'user': 'Usuário teste',
+    }));
 
     ws.on('close', () => console.log('Client disconnected'));
 });
