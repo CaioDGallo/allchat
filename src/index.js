@@ -27,10 +27,16 @@ wss.on('connection', (ws) => {
 
         var receivedMessage = JSON.parse(message)
 
+        var createdMessage;
+        if(typeof receivedMessage.user == 'string'){
+            createdMessage = receivedMessage.user + ': ' +receivedMessage.message
+        }else{
+            createdMessage = receivedMessage.message
+        }
+
         var messageObject = {
-            'message': receivedMessage.message,
+            'message': createdMessage,
             'id': getUniqueID(),
-            'user': 'Usuário teste',
         }
         
         wss.clients
@@ -44,7 +50,6 @@ wss.on('connection', (ws) => {
     ws.send(JSON.stringify({
         'message': 'User connected to server',
         'id': getUniqueID(),
-        'user': 'Usuário teste',
     }));
 
     ws.on('close', () => console.log('Client disconnected'));
