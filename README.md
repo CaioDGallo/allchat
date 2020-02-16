@@ -1,5 +1,3 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
-
 ## AllChat
 
 A live chat written in JavaScript, using websocket. The front end was created using ReactJS and the backend using NodeJS.
