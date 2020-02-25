@@ -1,5 +1,6 @@
 const express = require('express');
 const WebSocket = require('ws');
+const SocketIO = require('socket.io');
 
 const INDEX = '/index.html';
 const PORT = process.env.PORT || 3000;
@@ -12,45 +13,22 @@ app.use((req, res) => res.sendFile(INDEX, { root: __dirname }))
 
 var server = app.listen(PORT, () => console.log(`Listening on ${PORT}`));
 
-const wss = new WebSocket.Server({ server });
+const io = SocketIO(server)
 
-function getUniqueID() {
-    function s4() {
-        return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
-    }
-    return s4() + s4() + '-' + s4();
-};
+io.on('connection', function (socket) {
+    console.log('a user connected');
+    
+    socket.broadcast.emit('user_connection', {
+        'message': 'user has joined chat ...',
+        'id': Math.random(),
+    })
 
-wss.on('connection', (ws) => {
-
-    ws.on('message', (message) => {
-
-        var receivedMessage = JSON.parse(message)
-
-        var createdMessage;
-        if(typeof receivedMessage.user == 'string'){
-            createdMessage = receivedMessage.user + ': ' +receivedMessage.message
-        }else{
-            createdMessage = receivedMessage.message
-        }
-
-        var messageObject = {
-            'message': createdMessage,
-            'id': getUniqueID(),
-        }
-        
-        wss.clients
-        .forEach(client => {
-            if (client != ws) {
-                client.send(JSON.stringify(messageObject));
-            }    
-        });
+    socket.on('message', function (data) {
+        console.log(data)
+        socket.broadcast.emit('message', data)
     });
 
-    ws.send(JSON.stringify({
-        'message': 'User connected to server',
-        'id': getUniqueID(),
-    }));
-
-    ws.on('close', () => console.log('Client disconnected'));
+    socket.on('disconnect', function () {
+        console.log('user disconnected');
+    });
 });
