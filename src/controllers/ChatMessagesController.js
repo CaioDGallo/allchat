@@ -16,14 +16,16 @@ module.exports = {
     },
 
     async store(request, response){
-        const { content, sender_id, receiver_id } = request.body;
+        const { messages } = request.body;
 
-        let message = await ChatMessage.create({
-            content,
-            sender_id,
-            receiver_id
+        messages.forEach((item, index) => {
+            ChatMessage.create({
+                "content": item.content,
+                "sender_id": item.sender_id,
+                "receiver_id": item.receiver_id
+            })
         })
 
-        return response.json(message);
+        return response.json("messages inserted");
     },
 }
