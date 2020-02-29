@@ -1,15 +1,21 @@
 const express = require('express');
-const WebSocket = require('ws');
 const SocketIO = require('socket.io');
-
-const INDEX = '/index.html';
+const mongoose = require('mongoose');
+const routes = require('./routes');
+const cors = require('cors')
 const PORT = process.env.PORT || 3000;
 
 const app = express();
 
-app.use(express.json());
+mongoose.connect('mongodb+srv://caiogallo:forthehorde2401@cluster0-evtam.mongodb.net/allchatdb?retryWrites=true&w=majority',{
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+});
 
-app.use((req, res) => res.sendFile(INDEX, { root: __dirname }))
+app.use(cors({ origin: 'http://localhost:3333' }))
+app.use(cors({ origin: 'http://allchat-web.herokuapp.com' }))
+app.use(express.json());
+app.use(routes);
 
 var server = app.listen(PORT, () => console.log(`Listening on ${PORT}`));
 
