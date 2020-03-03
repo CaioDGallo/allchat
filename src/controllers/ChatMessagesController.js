@@ -3,19 +3,23 @@ const ChatMessage = require('../models/ChatMessage')
 //Index, Show, Store, Update and Destroy
 
 module.exports = {
-    async index(request, response){
+    async index(request, response) {
 
         const { sender_id, receiver_id } = request.query
 
         const messages = await ChatMessage.find({
-             'sender_id': sender_id, 
-             'receiver_id': receiver_id 
-            })
+            'sender_id': sender_id,
+            'receiver_id': receiver_id
+        })
 
-        return response.json(messages);
+        try {
+            return response.json(messages);
+        } catch (err) {
+            console.log('Error: ' + err);
+        }
     },
 
-    async store(request, response){
+    async store(request, response) {
         const { messages } = request.body;
 
         messages.forEach((item, index) => {

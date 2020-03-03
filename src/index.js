@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const SocketIO = require('socket.io');
 const mongoose = require('mongoose');
@@ -13,7 +15,7 @@ mongoose.connect('mongodb+srv://caiogallo:forthehorde2401@cluster0-evtam.mongodb
 });
 
 app.use(cors({ origin: 'http://localhost:3333' }))
-app.use(cors({ origin: 'http://allchat-web.herokuapp.com' }))
+//app.use(cors({ origin: 'http://allchat-web.herokuapp.com' }))
 app.use(express.json());
 app.use(routes);
 
