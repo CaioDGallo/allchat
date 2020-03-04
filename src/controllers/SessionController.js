@@ -35,15 +35,14 @@ module.exports = {
             return res.status(401).json({ error: 'Password does not match' });
         }
 
-        const { _id, name } = user;
-
-        console.log('secret: ' + authConfig.secret);
+        const { _id, name, username } = user;
 
         return res.json({
             user: {
                 _id,
                 name,
-                email
+                email,
+                username
             },
             token: jwt.sign({ _id }, authConfig.secret, {
                 expiresIn: authConfig.expiresIn
