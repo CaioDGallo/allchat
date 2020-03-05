@@ -27,8 +27,9 @@ io.on('connection', function (socket) {
     console.log('a user connected');
     
     socket.broadcast.emit('user_connection', {
-        'message': 'user has joined chat ...',
-        'id': Math.random(),
+        'content': 'user has joined chat ...',
+        'sender_id': '123',
+        'receiver_id': '456',
     })
 
     socket.on('message', function (data) {
