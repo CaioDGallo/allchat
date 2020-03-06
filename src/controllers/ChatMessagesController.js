@@ -5,11 +5,10 @@ const ChatMessage = require('../models/ChatMessage')
 module.exports = {
     async index(request, response) {
 
-        const { sender_id, receiver_id } = request.query
+        const { room } = request.query
 
         const messages = await ChatMessage.find({
-            'sender_id': sender_id,
-            'receiver_id': receiver_id
+            'room': room
         })
 
         try {
