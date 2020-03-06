@@ -26,7 +26,8 @@ module.exports = {
             ChatMessage.create({
                 "content": item.content,
                 "sender_id": item.sender_id,
-                "receiver_id": item.receiver_id
+                "receiver_id": item.receiver_id,
+                "room": item.room
             })
         })
 
