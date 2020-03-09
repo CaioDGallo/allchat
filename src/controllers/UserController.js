@@ -5,7 +5,11 @@ const User = require('../models/User');
 
 module.exports = {
     async index(request, response) {
-        const users = await User.find()
+        const { _id } = request.query
+
+        const users = await User.find({
+            _id: { $not: { $eq: _id } }
+        })
 
         return response.json(users);
     },
