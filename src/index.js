@@ -14,8 +14,8 @@ mongoose.connect('mongodb+srv://caiogallo:forthehorde2401@cluster0-evtam.mongodb
     useUnifiedTopology: true
 });
 
-app.use(cors({ origin: 'http://localhost:3333' }))
-//app.use(cors({ origin: 'http://allchat-web.herokuapp.com' }))
+//app.use(cors({ origin: 'http://localhost:3333' }))
+app.use(cors({ origin: 'http://allchat-web.herokuapp.com' }))
 app.use(express.json());
 app.use(routes);
 
