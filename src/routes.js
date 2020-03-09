@@ -11,12 +11,14 @@ const routes = Router();
 routes.post('/session', SessionController.store);
 
 //User Routes
-routes.get('/user', UserController.index);
 routes.post('/user', UserController.store);
-routes.delete('/user', UserController.delete);
-routes.put('/user', UserController.update);
 
 routes.use(authMiddleware);
+
+//Protected user Routes
+routes.get('/user', UserController.index);
+routes.delete('/user', UserController.delete);
+routes.put('/user', UserController.update);
 
 //ChatMessage Routes
 routes.get('/messages', ChatMessageController.index);
