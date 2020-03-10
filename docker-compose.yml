@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  allchat:
+    build: .
+    command: npm run dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ".:/home/caiogallo/Documents/allchat"
+
+  redis:
+    image: "redis:3.0.7"
+
+    command: redis-server --requirepass caiogallo
+
+    ports:
+     - "6379:6379"
+
+    volumes:
+     - ./redis-data:/home/caiogallo/Documents/redis-data
+      # - $PWD/redis.conf:/usr/local/etc/redis/redis.conf

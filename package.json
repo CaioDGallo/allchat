@@ -4,7 +4,8 @@
   "description": "A cross-plafort chat usin websocket.",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node src/index.js",
+    "dev": "node src/index.js"
   },
   "author": "",
   "license": "ISC",
@@ -21,5 +22,6 @@
     "utf-8-validate": "^5.0.2",
     "ws": "^7.2.1",
     "yup": "^0.28.1"
-  }
+  },
+  "devDependencies": {}
 }
