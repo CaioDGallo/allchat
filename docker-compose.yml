@@ -10,13 +10,13 @@ services:
       - ".:/home/caiogallo/Documents/allchat"
 
   redis:
-    image: "redis:3.0.7"
+    image: "redis"
 
-    command: redis-server --requirepass caiogallo
+    command: redis-server /home/caiogallo/Documents/allchat/redis.conf
 
     ports:
      - "6379:6379"
 
     volumes:
      - ./redis-data:/home/caiogallo/Documents/redis-data
-      # - $PWD/redis.conf:/usr/local/etc/redis/redis.conf
+     - ./redis.conf:/home/caiogallo/Documents/allchat/redis.conf

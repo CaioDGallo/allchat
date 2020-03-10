@@ -5,7 +5,13 @@ const SocketIO = require('socket.io');
 const mongoose = require('mongoose');
 const routes = require('./routes');
 const cors = require('cors')
+const redis = require('redis');
+
 const PORT = process.env.PORT || 3000;
+const REDIS_PORT = process.env.REDIS_PORT || 6379;
+const REDIS_HOST = process.env.REDIS_HOST || '172.24.0.2';
+
+const redisClient = redis.createClient(REDIS_PORT, '172.24.0.2');
 
 const app = express();
 
@@ -41,6 +47,14 @@ io.on('connection', function (socket) {
     socket.on('send_private_message', function(data) {
         console.log('sending room post', data.room, data.content);
         socket.broadcast.to(data.room).emit('private_message', data);
+
+        redisClient.get('connected', (err, data) => {
+            if (err) throw err;
+        
+            if (data !== null) {
+              console.log('data = ', data)
+            }
+          });
     });
 
     // socket.on('message', function (data) {
