@@ -7,16 +7,22 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ".:/home/caiogallo/Documents/allchat"
+      # Linux dir
+      # - ".:/home/caiogallo/Documents/allchat"
+      # Mac dir
+      - ".:/Users/caiogallo/documents/allchat"
 
-  redis:
-    image: "redis"
+  # redis:
+  #   image: "redis"
 
-    command: redis-server /home/caiogallo/Documents/allchat/redis.conf
+  #   command: redis-server /home/caiogallo/Documents/allchat/redis.conf
 
-    ports:
-     - "6379:6379"
+  #   ports:
+  #    - "6379:6379"
 
-    volumes:
-     - ./redis-data:/home/caiogallo/Documents/redis-data
-     - ./redis.conf:/home/caiogallo/Documents/allchat/redis.conf
+  #   volumes:
+  #    - ./redis-data:/home/caiogallo/Documents/redis-data
+  #    - ./redis.conf:/home/caiogallo/Documents/allchat/redis.conf
+
+    #  GET IP OF REDIS
+    #  docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' container_name_or_id
