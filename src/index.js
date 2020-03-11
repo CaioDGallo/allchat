@@ -6,6 +6,9 @@ const mongoose = require('mongoose');
 const routes = require('./routes');
 const cors = require('cors')
 
+const redis = require('redis')
+const redisClient = redis.createClient()
+
 const PORT = process.env.PORT || 3000;
 
 const app = express();
@@ -27,6 +30,9 @@ const io = SocketIO(server)
 io.on('connection', function (socket) {
     console.log('a user connected');
 
+    const obj = {'messages':[]}
+    redisClient.setex('pending', 3600, JSON.stringify(obj))
+
     socket.broadcast.emit('user_connection', {
         'room' : "1",
         'content': 'user has joined chat ...',
@@ -37,6 +43,14 @@ io.on('connection', function (socket) {
     socket.on('subscribe', function(room) {
         console.log('joining room', room);
         socket.join(room);
+
+        redisClient.get('pending', (err, data) => {
+            if (err) throw err;
+
+            if (data !== null) {
+              console.log('data = ', data)
+            }
+          });
     });
     
     socket.on('send_private_message', function(data) {
