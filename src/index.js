@@ -1,69 +1,93 @@
-require('dotenv').config();
+require("dotenv").config();
 
-const express = require('express');
-const SocketIO = require('socket.io');
-const mongoose = require('mongoose');
-const routes = require('./routes');
-const cors = require('cors')
+const express = require("express");
+const SocketIO = require("socket.io");
+const mongoose = require("mongoose");
+const routes = require("./routes");
+const cors = require("cors");
 
-const redis = require('redis')
-const redisClient = redis.createClient()
+const redis = require("redis");
+const redisClient = redis.createClient();
+
+const redis_cache = {};
 
 const PORT = process.env.PORT || 3000;
 
 const app = express();
 
-mongoose.connect('mongodb+srv://caiogallo:forthehorde2401@cluster0-evtam.mongodb.net/allchatdb?retryWrites=true&w=majority', {
+mongoose.connect(
+  "mongodb+srv://caiogallo:forthehorde2401@cluster0-evtam.mongodb.net/allchatdb?retryWrites=true&w=majority",
+  {
     useNewUrlParser: true,
     useUnifiedTopology: true
-});
+  }
+);
 
-app.use(cors({ origin: 'http://localhost:3333' }))
+app.use(cors({ origin: "http://localhost:3333" }));
 //app.use(cors({ origin: 'https://allchat-web.herokuapp.com' }))
 app.use(express.json());
 app.use(routes);
 
 var server = app.listen(PORT, () => console.log(`Listening on ${PORT}`));
 
-const io = SocketIO(server)
+const io = SocketIO(server);
 
-io.on('connection', function (socket) {
-    console.log('a user connected');
+var allClients = {}
 
-    const obj = {'messages':[]}
-    redisClient.setex('pending', 3600, JSON.stringify(obj))
+io.on("connection", function(socket) {
+  console.log("a user connected");
 
-    socket.broadcast.emit('user_connection', {
-        'room' : "1",
-        'content': 'user has joined chat ...',
-        'sender_id': '123',
-        'receiver_id': '456',
-    })
+  socket.broadcast.emit("user_connection", {
+    room: "r1",
+    content: "user has joined chat ...",
+    sender_id: "123",
+    receiver_id: "456",
+    pending: true
+  });
 
-    socket.on('subscribe', function(room) {
-        console.log('joining room', room);
-        socket.join(room);
+  socket.on("subscribe", function(room) {
+    console.log("joining room", room);
+    socket.join(room);
 
-        redisClient.get('pending', (err, data) => {
-            if (err) throw err;
+    allClients[socket.id] = room;
 
-            if (data !== null) {
-              console.log('data = ', data)
-            }
-          });
+    if(redis_cache[room] == null){
+        redis_cache[room] = [];
+    }
+    redisClient.setex("cached_messages", 3600, JSON.stringify(redis_cache));
+  });
+
+  socket.on("send_private_message", function(data) {
+    console.log("sending room post", data.room, data.content);
+
+    redisClient.get("cached_messages", (err, cached) => {
+      if (err) throw err;
+
+      if (cached !== null) {
+        cachedObj = JSON.parse(cached);
+        cachedObj[data.room].push(data);
+        //  console.log("cached = ", cachedObj);
+        redisClient.setex("cached_messages", 3600, JSON.stringify(cachedObj));
+      }
     });
-    
-    socket.on('send_private_message', function(data) {
-        console.log('sending room post', data.room, data.content);
-        socket.broadcast.to(data.room).emit('private_message', data);
-    });
+    socket.broadcast.to(data.room).emit("private_message", data);
+  });
 
-    // socket.on('message', function (data) {
-    //     console.log(data)
-    //     socket.broadcast.emit('message', data)
-    // });
+  socket.on("disconnect", function(data) {
+    console.log("user disconnected ", allClients[socket.id]);
 
-    socket.on('disconnect', function () {
-        console.log('user disconnected');
-    });
+    const roomId = allClients[socket.id]
+
+    redisClient.get("cached_messages", (err, cached) => {
+        if (err) throw err;
+  
+        if (cached !== null) {
+          cachedObj = JSON.parse(cached);
+            
+          //This is the object containing all the cached messages cachedObj[roomId]
+          //From here, start a queue to save the messages on the database TODO
+            console.log("disconnect = ", cachedObj[roomId]);
+        }
+      });
+  });
 });
