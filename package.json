@@ -25,5 +25,7 @@
     "ws": "^7.2.1",
     "yup": "^0.28.1"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "sucrase": "^3.12.1"
+  }
 }

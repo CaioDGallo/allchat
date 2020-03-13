@@ -1,4 +1,4 @@
-const ChatMessage = require('../models/ChatMessage')
+const ChatMessageDAO = require('../database/ChatMessageDAO')
 
 //Index, Show, Store, Update and Destroy
 
@@ -7,9 +7,7 @@ module.exports = {
 
         const { room } = request.query
 
-        const messages = await ChatMessage.find({
-            'room': room
-        })
+        const messages = await ChatMessageDAO.getMessagesFromDatabase(room)
 
         try {
             return response.json(messages);
@@ -21,14 +19,9 @@ module.exports = {
     async store(request, response) {
         const { messages } = request.body;
 
-        messages.forEach((item, index) => {
-            ChatMessage.create({
-                "content": item.content,
-                "sender_id": item.sender_id,
-                "receiver_id": item.receiver_id,
-                "room": item.room
-            })
-        })
+        console.log(messages, ' aqui')
+
+        await ChatMessageDAO.persistMessaagesOnDatabase(messages)
 
         return response.json("messages inserted");
     },
