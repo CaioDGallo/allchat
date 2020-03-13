@@ -23,6 +23,11 @@ module.exports = {
       room: room
     });
 
+    //TODO This piece of code is not working, it is supposed to get messages from cache
+    // when they weren't persisted on mongo yet, but the other client did not disconnect.
+    // So the messages are only in cache, and not in DB. Append messages from cache to the ones gotten, 
+    // from DB. 
+    // Test implementations with new package [async-redis]
     RedisClient.get("cached_messages", (err, cached) => {
       if (err) throw err;
 
