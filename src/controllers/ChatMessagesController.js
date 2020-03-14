@@ -1,7 +1,5 @@
 const ChatMessageDAO = require('../database/ChatMessageDAO')
 
-//Index, Show, Store, Update and Destroy
-
 module.exports = {
     async index(request, response) {
 

@@ -28,7 +28,9 @@ module.exports = {
     if (cached !== null) {
       const cachedObj = JSON.parse(cached);
       //console.log("teste inside redis", cachedObj);
-      messages = [...messages, ...cachedObj[room]];
+      if(cachedObj[room]){
+        messages = [...messages, ...cachedObj[room]];
+      }
     }
 
     //console.log("teste XD", messages);

@@ -1,11 +1,10 @@
 import server from "./server";
-import { redis_cache, RedisClient } from "./database/RedisClient";
+import { cacheMessage, registerRoom, storeCachedMessagesOnDatabase } from "./database/RedisClient";
 
 export default function() {
   const SocketIO = require("socket.io");
 
   const io = SocketIO(server);
-  const ChatMessageDAO = require("../src/database/ChatMessageDAO");
 
   var allClients = {};
 
@@ -26,55 +25,22 @@ export default function() {
 
       allClients[socket.id] = room;
 
-      RedisClient.get("cached_messages", (err, cached) => {
-        if (err) throw err;
-
-        if (cached !== null) {
-          const cachedObj = JSON.parse(cached);
-
-          if (cachedObj[room] == null) {
-            cachedObj[room] = [];
-          }
-            
-          //  console.log("cached = ", cachedObj);
-          RedisClient.setex("cached_messages", 3600, JSON.stringify(cachedObj));
-        }
-      });
-      RedisClient.setex("cached_messages", 3600, JSON.stringify(redis_cache));
+      registerRoom(room)
     });
 
     socket.on("send_private_message", function(data) {
       console.log("sending room post", data.room, data.content);
 
-      RedisClient.get("cached_messages", (err, cached) => {
-        if (err) throw err;
+      cacheMessage(data)
 
-        if (cached !== null) {
-          const cachedObj = JSON.parse(cached);
-          cachedObj[data.room].push(data);
-          //  console.log("cached = ", cachedObj);
-          RedisClient.setex("cached_messages", 3600, JSON.stringify(cachedObj));
-        }
-      });
       socket.broadcast.to(data.room).emit("private_message", data);
     });
 
     socket.on("disconnect", function() {
       console.log("user disconnected ", allClients[socket.id]);
 
-      RedisClient.get("cached_messages", (err, cached) => {
-        if (err) throw err;
-
-        if (cached !== null) {
-          const roomId = allClients[socket.id];
-          const cachedObj = JSON.parse(cached);
-
-          const messages = cachedObj[roomId];
-          if (messages && messages.length > 0) {
-            ChatMessageDAO.persistMessaagesOnDatabase(messages);
-          }
-        }
-      });
+      const room = allClients[socket.id]
+      storeCachedMessagesOnDatabase(room)
     });
   });
 }
