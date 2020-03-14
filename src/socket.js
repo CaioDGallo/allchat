@@ -26,9 +26,20 @@ export default function() {
 
       allClients[socket.id] = room;
 
-      if (redis_cache[room] == null) {
-        redis_cache[room] = [];
-      }
+      RedisClient.get("cached_messages", (err, cached) => {
+        if (err) throw err;
+
+        if (cached !== null) {
+          const cachedObj = JSON.parse(cached);
+
+          if (cachedObj[room] == null) {
+            cachedObj[room] = [];
+          }
+            
+          //  console.log("cached = ", cachedObj);
+          RedisClient.setex("cached_messages", 3600, JSON.stringify(cachedObj));
+        }
+      });
       RedisClient.setex("cached_messages", 3600, JSON.stringify(redis_cache));
     });
 
@@ -48,7 +59,7 @@ export default function() {
       socket.broadcast.to(data.room).emit("private_message", data);
     });
 
-    socket.on("disconnect", function(data) {
+    socket.on("disconnect", function() {
       console.log("user disconnected ", allClients[socket.id]);
 
       RedisClient.get("cached_messages", (err, cached) => {
