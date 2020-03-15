@@ -17,8 +17,6 @@ module.exports = {
     async store(request, response) {
         const { messages } = request.body;
 
-        console.log(messages, ' aqui')
-
         await ChatMessageDAO.persistMessaagesOnDatabase(messages)
 
         return response.json("messages inserted");
