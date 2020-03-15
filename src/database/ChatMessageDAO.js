@@ -5,17 +5,16 @@ module.exports = {
   async persistMessaagesOnDatabase(messages) {
     await ChatMessage.insertMany(messages);
 
-    RedisClient.get("cached_messages", (err, cached) => {
-      if (err) throw err;
+    const roomId = messages[0].room;
+    const cachedRoom = await getValue(roomId);
 
-      if (cached !== null) {
-        const roomId = messages[0].room;
-        const cachedObj = JSON.parse(cached);
+    if (cachedRoom !== null) {
+      var cachedRoomObj = JSON.parse(cachedRoom);
 
-        cachedObj[roomId] = [];
-        RedisClient.setex("cached_messages", 3600, JSON.stringify(cachedObj));
-      }
-    });
+      cachedRoomObj = [];
+
+      RedisClient.set(roomId, JSON.stringify(cachedRoomObj));
+    }
   },
 
   async getMessagesFromDatabase(room) {
@@ -23,17 +22,23 @@ module.exports = {
       room: room
     });
 
-    const cached = await getValue("cached_messages");
+    const cachedRoom = await getValue(room);
 
-    if (cached !== null) {
-      const cachedObj = JSON.parse(cached);
-      //console.log("teste inside redis", cachedObj);
-      if(cachedObj[room]){
-        messages = [...messages, ...cachedObj[room]];
+    if (cachedRoom !== null) {
+      const cachedRoomObj = JSON.parse(cachedRoom);
+      if(cachedRoomObj){
+        messages = [...messages, ...cachedRoomObj];
       }
     }
 
-    //console.log("teste XD", messages);
+    // // STORE messages SOMEWHERE, because if client does not receive the response
+    // // it needs to be rolled back.
+    // messages.forEach((element) => {
+    //   if(element.pending){
+    //     element.pending = false
+    //   }
+    // })
+
     return messages;
   }
 };

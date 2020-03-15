@@ -1,5 +1,5 @@
 import server from "./server";
-import { cacheMessage, registerRoom, storeCachedMessagesOnDatabase } from "./database/RedisClient";
+import { cacheMessage, registerRoom, storeCachedMessagesOnDatabase, setMessageAsDelivered } from "./database/RedisClient";
 
 export default function() {
   const SocketIO = require("socket.io");
@@ -12,11 +12,6 @@ export default function() {
     console.log("a user connected");
 
     socket.broadcast.emit("user_connection", {
-      room: "r1",
-      content: "user has joined chat ...",
-      sender_id: "123",
-      receiver_id: "456",
-      pending: true
     });
 
     socket.on("subscribe", function(room) {
@@ -34,6 +29,12 @@ export default function() {
       cacheMessage(data)
 
       socket.broadcast.to(data.room).emit("private_message", data);
+    });
+
+    socket.on("message_delivered", function(data) {
+      console.log("message received by the client", data.room, ' ',data.id);
+
+      setMessageAsDelivered(socket, data)
     });
 
     socket.on("disconnect", function() {

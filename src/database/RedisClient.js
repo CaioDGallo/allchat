@@ -3,9 +3,6 @@ const asyncRedis = require("async-redis");
 
 const RedisClient = redis.createClient();
 const AsyncRedisClient = asyncRedis.createClient();
-const redis_cache = {};
-
-RedisClient.setex("cached_messages", 3600, JSON.stringify(redis_cache));
 
 var setValue = async (key, value) => {
   return await AsyncRedisClient.set(key, value);
@@ -17,41 +14,46 @@ var getValue = async key => {
 };
 
 function registerRoom(room){
-  RedisClient.get("cached_messages", (err, cached) => {
+  RedisClient.get(room, (err, cachedRoom) => {
     if (err) throw err;
 
-    if (cached !== null) {
-      const cachedObj = JSON.parse(cached);
+    if (cachedRoom == null) {
+      //const cachedRoomObj = JSON.parse(cachedRoom);
 
-      room in cachedObj ? console.log('exists') : cachedObj[room] = []
+      //room in cachedRoomObj ? console.log('exists') : cachedRoomObj[room] = []
 
-      RedisClient.setex("cached_messages", 3600, JSON.stringify(cachedObj));
+      RedisClient.set(room, JSON.stringify([]));
     }
   });
 }
 
 function cacheMessage(data){
-  RedisClient.get("cached_messages", (err, cached) => {
+  RedisClient.get(data.room, (err, cachedRoom) => {
     if (err) throw err;
 
-    if (cached !== null) {
-      const cachedObj = JSON.parse(cached);
-      cachedObj[data.room].push(data);
+    if (cachedRoom !== null) {
+      const cachedRoomObj = JSON.parse(cachedRoom);
+      cachedRoomObj.push(data);
       //  console.log("cached = ", cachedObj);
-      RedisClient.setex("cached_messages", 3600, JSON.stringify(cachedObj));
+      RedisClient.set(data.room, JSON.stringify(cachedRoomObj));
     }
   });
 }
 
 function storeCachedMessagesOnDatabase(room){
-  RedisClient.get("cached_messages", (err, cached) => {
+  if(room == null){
+    console.log('room broken', room)
+    return
+  }
+
+  RedisClient.get(room, (err, cachedRoom) => {
     if (err) throw err;
   
-    if (cached !== null) {
+    if (cachedRoom !== null) {
       const ChatMessageDAO = require("./ChatMessageDAO");
-      const cachedObj = JSON.parse(cached);
+      const cachedRoomObj = JSON.parse(cachedRoom);
   
-      const messages = cachedObj[room];
+      const messages = cachedRoomObj;
 
       if (messages && messages.length > 0) {
         ChatMessageDAO.persistMessaagesOnDatabase(messages);
@@ -60,4 +62,22 @@ function storeCachedMessagesOnDatabase(room){
   });
 }
 
-export { RedisClient, setValue, getValue, registerRoom, cacheMessage, storeCachedMessagesOnDatabase };
+function setMessageAsDelivered(socket ,data){
+  RedisClient.get(data.room, (err, cachedRoom) => {
+    if (err) throw err;
+
+    if (cachedRoom !== null) {
+      const cachedRoomObj = JSON.parse(cachedRoom);
+      cachedRoomObj.forEach((element) => {
+        if(element._id == data._id){
+          element.pending = false
+        }
+      })
+      //  console.log("cached = ", cachedObj);
+      RedisClient.set(data.room, JSON.stringify(cachedRoomObj));
+      socket.broadcast.to(data.room).emit("delivered_confirmation", data);
+    }
+  });
+}
+
+export { RedisClient, setValue, getValue, registerRoom, cacheMessage, storeCachedMessagesOnDatabase, setMessageAsDelivered };
