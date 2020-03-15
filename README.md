@@ -19,3 +19,8 @@ You will also see any lint errors in the console.
 
 It is necessary to start a redis instance for all the features to work properly
 docker run --name redis -p 6379:6379 -d -t redis
+
+### NEXT STEPS
+
+- Currently, messages are only being set as pending=false when both clients are connected to the websocket.
+It is necessary to implement a way to send messages pending property to false when receivend them from MongoDB or from the Redis cache.
